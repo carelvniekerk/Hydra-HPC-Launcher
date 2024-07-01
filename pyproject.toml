@@ -6,7 +6,7 @@ authors = ["Carel van Niekerk <cvanniekerk@hhu.de>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 hydra-core = "^1.3.2"
 hydra-zen = "^0.13.0"
 
@@ -14,3 +14,8 @@ hydra-zen = "^0.13.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "hhu"
+url = "http://pypi.repo.test.hhu.de/simple/"
+priority = "primary"
