@@ -1,7 +1,7 @@
 from hydra.conf import HydraConf
 from hydra_zen import ZenStore, builds, zen
 
-from hydra_plugins.print_command_launcher.launcher import PrintCommandLauncher
+from hydra_plugins.hpc_submission_launcher.launcher import HPCSubmissionLauncher
 
 
 def train_model(learning_rate: float = 0.01, batch_size: int = 32, epochs: int = 10):
@@ -20,7 +20,7 @@ store(ModelConfig, name="main")
 if __name__ == "__main__":
     hydra_conf = HydraConf(
         launcher={
-            "_target_": "hydra_plugins.print_command_launcher.launcher.PrintCommandLauncher",
+            "_target_": "hydra_plugins.hpc_submission_launcher.launcher.HPCSubmissionLauncher",
         },
     )
     store(hydra_conf)
