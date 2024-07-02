@@ -1,3 +1,7 @@
+[tool.ruff]
+extend = "~/.config/ruff/config.toml"
+target-version = "py312"
+
 [tool.poetry]
 name = "hydrazenlauncher"
 version = "0.1.0"
