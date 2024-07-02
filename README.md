@@ -12,7 +12,7 @@ Institution: Heinrich Heine University Düsseldorf
 
 ```bash
 mkdir -p hydra_plugins
-git clone TODO hydra_plugins/hpc_submission_launcher
+git clone https://gitlab.cs.uni-duesseldorf.de/dsml/HydraHPCLauncher.git hydra_plugins/hpc_submission_launcher
 ```
 
 ## Usage
