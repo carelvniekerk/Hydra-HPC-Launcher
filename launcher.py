@@ -115,12 +115,12 @@ class HPCSubmissionLauncher(Launcher):
 
     def __init__(  # noqa: PLR0913, D107
         self,
-        queue: Queue = Queue.DSML,
+        queue: Queue = Queue.CUDA,
         ncpus: int = 2,
         memory: int = 32,
         ngpus: int = 1,
-        walltime: str = "08:00:00",
-        template: Template = Template.DSML,
+        walltime: str = "16:00:00",
+        template: Template = Template.RTX6000,
         **kwargs: dict,
     ) -> None:
         super().__init__(**kwargs)
@@ -150,15 +150,21 @@ class HPCSubmissionLauncher(Launcher):
         """Launch the jobs with the given overrides."""
         results = []
         for idx, job_override in enumerate(job_overrides):
+            # Job name is the task function name and the job index
             job_name: str = (
                 f"{self.task_function.func.__name__}_{initial_job_idx + idx}"
             )
+            # If the job script is in the bin directory (ie. a poetry script) then use
+            # the prun option in the submission command
+            job_script: Path = Path(sys.argv[0])
+            if job_script.suffix == "" and job_script.resolve().parent.name == "bin":
+                job_script = Path(f"prun:{job_script.name}")
             job_script_args: str = " ".join(job_override)
             launch_command = [
                 "hpc",
                 "run",
                 f"--job_name {job_name}",
-                f"--job_script {sys.argv[0]}",
+                f"--job_script {job_script}",
                 f'--job_script_args "{job_script_args}"',
                 f"--template {self.template}",
                 f"--queue {self.queue}",
