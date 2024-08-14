@@ -151,9 +151,10 @@ class HPCSubmissionLauncher(Launcher):
         results = []
         for idx, job_override in enumerate(job_overrides):
             # Job name is the task function name and the job index
-            job_name: str = (
-                f"{self.task_function.func.__name__}_{initial_job_idx + idx}"
-            )
+            try:
+                job_name: str = f"{self.task_function.func.__name__}_{initial_job_idx + idx}"
+            except AttributeError:
+                job_name: str = f"{self.task_function.__name__}_{initial_job_idx + idx}"
             # If the job script is in the bin directory (ie. a poetry script) then use
             # the prun option in the submission command
             job_script: Path = Path(sys.argv[0])
@@ -211,14 +212,15 @@ class HPCSubmissionLauncher(Launcher):
         return results
 
 
-# Register the HPC Submission Launcher
-HPCSubmissionLauncherConfig = builds(
-    HPCSubmissionLauncher,
-    populate_full_signature=True,
-)
-ConfigStore.instance().store(
-    group="hydra/launcher",
-    name="hpc_submission",
-    node=HPCSubmissionLauncherConfig,
-)
-Plugins.instance().register(HPCSubmissionLauncher)
+def register_plugin() -> None:
+    """Register the HPC Submission Launcher."""
+    HPCSubmissionLauncherConfig = builds(
+        HPCSubmissionLauncher,
+        populate_full_signature=True,
+    )
+    ConfigStore.instance().store(
+        group="hydra/launcher",
+        name="hpc_submission",
+        node=HPCSubmissionLauncherConfig,
+    )
+    Plugins.instance().register(HPCSubmissionLauncher)
