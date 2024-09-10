@@ -152,7 +152,9 @@ class HPCSubmissionLauncher(Launcher):
         for idx, job_override in enumerate(job_overrides):
             # Job name is the task function name and the job index
             try:
-                job_name: str = f"{self.task_function.func.__name__}_{initial_job_idx + idx}"
+                job_name: str = (
+                    f"{self.task_function.func.__name__}_{initial_job_idx + idx}"
+                )
             except AttributeError:
                 job_name: str = f"{self.task_function.__name__}_{initial_job_idx + idx}"
             # If the job script is in the bin directory (ie. a poetry script) then use
@@ -160,6 +162,16 @@ class HPCSubmissionLauncher(Launcher):
             job_script: Path = Path(sys.argv[0])
             if job_script.suffix == "" and job_script.resolve().parent.name == "bin":
                 job_script = Path(f"prun:{job_script.name}")
+
+            # Reformat string overrides to handle spaces in the values
+            for override_idx, override in enumerate(job_override):
+                if "\\" not in override:
+                    continue
+
+                override_key, override_value = override.split("=", 1)
+                override_value: str = override_value.replace("\\", "")
+                job_override[override_idx] = f'{override_key}=\\"{override_value}\\"'
+
             job_script_args: str = " ".join(job_override)
             launch_command = [
                 "hpc",
