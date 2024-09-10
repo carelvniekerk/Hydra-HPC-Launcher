@@ -164,15 +164,16 @@ class HPCSubmissionLauncher(Launcher):
                 job_script = Path(f"prun:{job_script.name}")
 
             # Reformat string overrides to handle spaces in the values
-            for override_idx, override in enumerate(job_override):
+            overrides_list: list[str] = []
+            for override in job_override:
                 if "\\" not in override:
-                    continue
+                    overrides_list.append(override)
 
                 override_key, override_value = override.split("=", 1)
                 override_value: str = override_value.replace("\\", "")
-                job_override[override_idx] = f'{override_key}=\\"{override_value}\\"'
+                overrides_list.append(f'{override_key}=\\"{override_value}\\"')
 
-            job_script_args: str = " ".join(job_override)
+            job_script_args: str = " ".join(overrides_list)
             launch_command = [
                 "hpc",
                 "run",
