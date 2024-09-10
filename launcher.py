@@ -168,6 +168,7 @@ class HPCSubmissionLauncher(Launcher):
             for override in job_override:
                 if "\\" not in override:
                     overrides_list.append(override)
+                    continue
 
                 override_key, override_value = override.split("=", 1)
                 override_value: str = override_value.replace("\\", "")
