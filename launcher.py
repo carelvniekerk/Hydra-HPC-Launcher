@@ -172,6 +172,12 @@ class HPCSubmissionLauncher(Launcher):
 
                 override_key, override_value = override.split("=", 1)
                 override_value: str = override_value.replace("\\", "")
+
+                if "(" in override_value:
+                    override_value = override_value.replace("(", "\\(")
+                if ")" in override_value:
+                    override_value = override_value.replace(")", "\\)")
+
                 overrides_list.append(f'{override_key}=\\"{override_value}\\"')
 
             job_script_args: str = " ".join(overrides_list)
