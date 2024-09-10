@@ -23,6 +23,7 @@
 import re
 import subprocess
 import sys
+from dataclasses import dataclass
 from enum import StrEnum
 from logging import getLogger
 from pathlib import Path
@@ -89,18 +90,22 @@ def handle_output_dir_and_save_configs(
         HydraConfig.instance().cfg = orig_hydra_cfg
 
 
-class Queue(StrEnum):
-    """Queue options for HPC submission."""
+class HPCQueue(StrEnum):
+    """Enumeration of HPC queues."""
 
-    DSML = "DSML"
+    DEFAULT = ""
     CUDA = "CUDA"
+    DSML = "DSML"
 
 
 class Template(StrEnum):
-    """Template options for HPC submission."""
+    """Enumeration of HPC templates."""
 
+    DSML_SHORT = "DSML_SHORT"
     DSML = "DSML"
+    CPU = "CPU"
     GTX1080 = "GTX1080"
+    TESLAT4 = "TESLAT4"
     RTX6000 = "RTX6000"
     RTX8000 = "RTX8000"
     A100_40GB = "A100_40GB"
@@ -115,11 +120,11 @@ class HPCSubmissionLauncher(Launcher):
 
     def __init__(  # noqa: PLR0913, D107
         self,
-        queue: Queue = Queue.CUDA,
+        queue: HPCQueue = HPCQueue.DSML,
         ncpus: int = 2,
-        memory: int = 32,
+        memory: int = 16,
         ngpus: int = 1,
-        walltime: str = "16:00:00",
+        walltime: str = "48:00:00",
         template: Template = Template.RTX6000,
         **kwargs: dict,
     ) -> None:
