@@ -23,10 +23,10 @@
 import re
 import subprocess
 import sys
-from dataclasses import dataclass
 from enum import StrEnum
 from logging import getLogger
 from pathlib import Path
+from typing import Sequence
 
 from hydra.core.config_store import ConfigStore
 from hydra.core.hydra_config import HydraConfig
@@ -149,19 +149,19 @@ class HPCSubmissionLauncher(Launcher):
 
     def launch(
         self,
-        job_overrides: list,
+        job_overrides: Sequence[Sequence[str]],
         initial_job_idx: int = 0,
-    ) -> list[JobReturn]:
+    ) -> Sequence[JobReturn]:
         """Launch the jobs with the given overrides."""
-        results = []
+        results: list[JobReturn] = []
         for idx, job_override in enumerate(job_overrides):
             # Job name is the task function name and the job index
             try:
                 job_name: str = (
-                    f"{self.task_function.func.__name__}_{initial_job_idx + idx}"
+                    f"{self.task_function.func.__name__}_{initial_job_idx + idx}"  # type: ignore[attr-defined]
                 )
             except AttributeError:
-                job_name: str = f"{self.task_function.__name__}_{initial_job_idx + idx}"
+                job_name = f"{self.task_function.__name__}_{initial_job_idx + idx}"
             # If the job script is in the bin directory (ie. a poetry script) then use
             # the prun option in the submission command
             job_script: Path = Path(sys.argv[0])
@@ -176,7 +176,7 @@ class HPCSubmissionLauncher(Launcher):
                     continue
 
                 override_key, override_value = override.split("=", 1)
-                override_value: str = override_value.replace("\\", "")
+                override_value = override_value.replace("\\", "")
 
                 if "(" in override_value:
                     override_value = override_value.replace("(", "\\(")
@@ -186,7 +186,7 @@ class HPCSubmissionLauncher(Launcher):
                 overrides_list.append(f'{override_key}=\\"{override_value}\\"')
 
             job_script_args: str = " ".join(overrides_list)
-            launch_command = [
+            launch_command_list: list[str] = [
                 "hpc",
                 "run",
                 f"--job_name {job_name}",
@@ -201,8 +201,8 @@ class HPCSubmissionLauncher(Launcher):
             ]
 
             # Submit job to HPC
-            launch_command = " ".join(launch_command)
-            log_msg = f"Submitting job with command: {launch_command}"
+            launch_command: str = " ".join(launch_command_list)
+            log_msg: str = f"Submitting job with command: {launch_command}"
             logger.info(log_msg)
             output = subprocess.run(
                 launch_command,
@@ -239,13 +239,13 @@ class HPCSubmissionLauncher(Launcher):
 
 def register_plugin() -> None:
     """Register the HPC Submission Launcher."""
-    HPCSubmissionLauncherConfig = builds(
+    hpc_submission_launcher_config = builds(
         HPCSubmissionLauncher,
         populate_full_signature=True,
     )
     ConfigStore.instance().store(
         group="hydra/launcher",
         name="hpc_submission",
-        node=HPCSubmissionLauncherConfig,
+        node=hpc_submission_launcher_config,
     )
     Plugins.instance().register(HPCSubmissionLauncher)
