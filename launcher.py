@@ -23,10 +23,10 @@
 import re
 import subprocess
 import sys
+from collections.abc import Sequence
 from enum import StrEnum
 from logging import getLogger
 from pathlib import Path
-from typing import Sequence
 
 from hydra.core.config_store import ConfigStore
 from hydra.core.hydra_config import HydraConfig
@@ -157,9 +157,7 @@ class HPCSubmissionLauncher(Launcher):
         for idx, job_override in enumerate(job_overrides):
             # Job name is the task function name and the job index
             try:
-                job_name: str = (
-                    f"{self.task_function.func.__name__}_{initial_job_idx + idx}"  # type: ignore[attr-defined]
-                )
+                job_name: str = f"{self.task_function.func.__name__}_{initial_job_idx + idx}"  # type: ignore[attr-defined]
             except AttributeError:
                 job_name = f"{self.task_function.__name__}_{initial_job_idx + idx}"
             # If the job script is in the bin directory (ie. a poetry script) then use

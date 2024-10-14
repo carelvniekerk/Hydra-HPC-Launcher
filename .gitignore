@@ -5,3 +5,6 @@ multirun
 outputs
 __pycache__
 pyproject.toml
+
+# MacOS files
+.DS_Store
