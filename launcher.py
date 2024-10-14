@@ -93,7 +93,7 @@ def handle_output_dir_and_save_configs(
 class HPCQueue(StrEnum):
     """Enumeration of HPC queues."""
 
-    DEFAULT = ""
+    DEFAULT = "DEFAULT"
     CUDA = "CUDA"
     DSML = "DSML"
 
@@ -129,7 +129,7 @@ class HPCSubmissionLauncher(Launcher):
         **kwargs: dict,
     ) -> None:
         super().__init__(**kwargs)
-        self.queue = queue
+        self.queue: HPCQueue = queue
         self.ncpus = ncpus
         self.memory = memory
         self.ngpus = ngpus
@@ -191,12 +191,15 @@ class HPCSubmissionLauncher(Launcher):
                 f"--job_script {job_script}",
                 f'--job_script_args "{job_script_args}"',
                 f"--template {self.template}",
-                f"--queue {self.queue}",
                 f"--ncpus {self.ncpus}",
                 f"--memory {self.memory}",
                 f"--ngpus {self.ngpus}",
                 f"--walltime {self.walltime}",
             ]
+            if self.queue != HPCQueue.DEFAULT:
+                launch_command_list.append(
+                    f"--queue {self.queue}",
+                )
 
             # Submit job to HPC
             launch_command: str = " ".join(launch_command_list)
