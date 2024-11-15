@@ -124,7 +124,7 @@ class HPCSubmissionLauncher(Launcher):
         ncpus: int = 2,
         memory: int = 16,
         ngpus: int = 1,
-        walltime: str = "48:00:00",
+        walltime: str = "-1:00:00",
         template: Template = Template.RTX6000,
         **kwargs: dict,
     ) -> None:
