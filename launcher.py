@@ -157,7 +157,9 @@ class HPCSubmissionLauncher(Launcher):
         for idx, job_override in enumerate(job_overrides):
             # Job name is the task function name and the job index
             try:
-                job_name: str = f"{self.task_function.func.__name__}_{initial_job_idx + idx}"  # type: ignore[attr-defined]
+                job_name: str = (
+                    f"{self.task_function.func.__name__}_{initial_job_idx + idx}"  # type: ignore[attr-defined]
+                )
             except AttributeError:
                 job_name = f"{self.task_function.__name__}_{initial_job_idx + idx}"
             # If the job script is in the bin directory (ie. a poetry script) then use
@@ -195,7 +197,7 @@ class HPCSubmissionLauncher(Launcher):
                 f"--ncpus {self.ncpus}",
                 f"--memory {self.memory}",
                 f"--ngpus {self.ngpus}",
-                f"--walltime {self.walltime}",
+                f"--walltime={self.walltime}",
             ]
 
             # Submit job to HPC
