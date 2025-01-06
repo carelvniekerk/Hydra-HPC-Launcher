@@ -112,6 +112,13 @@ class Template(StrEnum):
     A100_80GB = "A100_80GB"
 
 
+class PackageManager(StrEnum):
+    """Enumeration of package managers."""
+
+    POETRY = "prun"
+    UV = "uvrun"
+
+
 logger = getLogger("__main__")
 
 
@@ -126,6 +133,7 @@ class HPCSubmissionLauncher(Launcher):
         ngpus: int = 1,
         walltime: str = "48:00:00",
         template: Template = Template.RTX6000,
+        package_manager: PackageManager = PackageManager.POETRY,
         **kwargs: dict,
     ) -> None:
         super().__init__(**kwargs)
@@ -135,6 +143,7 @@ class HPCSubmissionLauncher(Launcher):
         self.ngpus = ngpus
         self.walltime = walltime
         self.template = template
+        self.package_manager = package_manager
 
     def setup(
         self,
@@ -157,14 +166,16 @@ class HPCSubmissionLauncher(Launcher):
         for idx, job_override in enumerate(job_overrides):
             # Job name is the task function name and the job index
             try:
-                job_name: str = f"{self.task_function.func.__name__}_{initial_job_idx + idx}"  # type: ignore[attr-defined]
+                job_name: str = (
+                    f"{self.task_function.func.__name__}_{initial_job_idx + idx}"  # type: ignore[attr-defined]
+                )
             except AttributeError:
                 job_name = f"{self.task_function.__name__}_{initial_job_idx + idx}"
             # If the job script is in the bin directory (ie. a poetry script) then use
             # the prun option in the submission command
             job_script: Path = Path(sys.argv[0])
             if job_script.suffix == "" and job_script.resolve().parent.name == "bin":
-                job_script = Path(f"prun:{job_script.name}")
+                job_script = Path(f"{self.package_manager.value}:{job_script.name}")
 
             # Reformat string overrides to handle spaces in the values
             overrides_list: list[str] = []
