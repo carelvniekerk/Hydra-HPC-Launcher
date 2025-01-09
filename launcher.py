@@ -133,7 +133,7 @@ class HPCSubmissionLauncher(Launcher):
         ngpus: int = 1,
         walltime: str = "48:00:00",
         template: Template = Template.RTX6000,
-        package_manager: PackageManager = PackageManager.POETRY,
+        package_manager: PackageManager = PackageManager.UV,
         **kwargs: dict,
     ) -> None:
         super().__init__(**kwargs)
