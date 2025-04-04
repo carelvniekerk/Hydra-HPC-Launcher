@@ -192,7 +192,7 @@ class HPCSubmissionLauncher(Launcher):
                 if ")" in override_value:
                     override_value = override_value.replace(")", "\\)")
                 if "$" in override_value:
-                    override_value = override_value.replace("$", "\\$")
+                    override_value = override_value.replace("$", "\\\\\\$")
 
                 overrides_list.append(f'{override_key}=\\"{override_value}\\"')
 
