@@ -180,7 +180,7 @@ class HPCSubmissionLauncher(Launcher):
             # Reformat string overrides to handle spaces in the values
             overrides_list: list[str] = []
             for override in job_override:
-                if "\\" not in override:
+                if "\\" not in override and "$" not in override:
                     overrides_list.append(override)
                     continue
 
@@ -191,8 +191,12 @@ class HPCSubmissionLauncher(Launcher):
                     override_value = override_value.replace("(", "\\(")
                 if ")" in override_value:
                     override_value = override_value.replace(")", "\\)")
+                if "{" in override_value:
+                    override_value = override_value.replace("{", "\\{")
+                if "}" in override_value:
+                    override_value = override_value.replace("}", "\\}")
                 if "$" in override_value:
-                    override_value = override_value.replace("$", "\\\\\\$")
+                    override_value = override_value.replace("$", "\\\\\\\\$")
 
                 overrides_list.append(f'{override_key}=\\"{override_value}\\"')
 
