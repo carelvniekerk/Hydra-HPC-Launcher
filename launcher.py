@@ -194,7 +194,11 @@ class HPCSubmissionLauncher(Launcher):
             overrides_list: list[str] = []
             launch_command_overrides: list[str] = []
             for override in job_override:
-                if "\\" not in override and "$" not in override:
+                if (
+                    "\\" not in override
+                    and "$" not in override
+                    and "+launch" not in override
+                ):
                     overrides_list.append(override)
                     continue
 
@@ -212,10 +216,16 @@ class HPCSubmissionLauncher(Launcher):
                 if "$" in override_value:
                     override_value = override_value.replace("$", "\\\\\\\\$")
 
-                if "+launch." in override_key:
-                    launch_command_overrides.append(
-                        f'{override_key.replace("+launch.", "")}=\\"{override_value}\\"',  # noqa: E501
+                # Handle launch command overrides
+                if "+launch" in override_key:
+                    override_key = override_key.replace("+launch.", "").replace(
+                        "+launch/",
+                        "",
                     )
+                    launch_command_overrides.append(
+                        f'{override_key}=\\"{override_value}\\"',
+                    )
+                    continue
                 overrides_list.append(f'{override_key}=\\"{override_value}\\"')
 
             if launch_command_overrides:
