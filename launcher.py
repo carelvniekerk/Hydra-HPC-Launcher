@@ -156,7 +156,7 @@ class HPCSubmissionLauncher(Launcher):
         self.config = config
         self.hydra_context = hydra_context
 
-    def launch(
+    def launch(  # noqa: C901, PLR0912, PLR0915
         self,
         job_overrides: Sequence[Sequence[str]],
         initial_job_idx: int = 0,
