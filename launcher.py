@@ -24,6 +24,7 @@ import re
 import subprocess
 import sys
 from collections.abc import Sequence
+from dataclasses import dataclass
 from enum import StrEnum
 from logging import getLogger
 from pathlib import Path
@@ -38,7 +39,6 @@ from hydra.core.utils import (
 )
 from hydra.plugins.launcher import Launcher
 from hydra.types import HydraContext, TaskFunction
-from hydra_zen import builds
 from omegaconf import DictConfig, OmegaConf, open_dict
 
 
@@ -93,7 +93,7 @@ def handle_output_dir_and_save_configs(
 class HPCQueue(StrEnum):
     """Enumeration of HPC queues."""
 
-    DEFAULT = ""
+    DEFAULT = "DEFAULT"
     CUDA = "CUDA"
     DSML = "DSML"
 
@@ -110,6 +110,13 @@ class Template(StrEnum):
     RTX8000 = "RTX8000"
     A100_40GB = "A100_40GB"
     A100_80GB = "A100_80GB"
+
+
+class PackageManager(StrEnum):
+    """Enumeration of package managers."""
+
+    POETRY = "prun"
+    UV = "uvrun"
 
 
 logger = getLogger("__main__")
@@ -129,12 +136,13 @@ class HPCSubmissionLauncher(Launcher):
         **kwargs: dict,
     ) -> None:
         super().__init__(**kwargs)
-        self.queue = queue
+        self.queue: HPCQueue = queue
         self.ncpus = ncpus
         self.memory = memory
         self.ngpus = ngpus
         self.walltime = walltime
         self.template = template
+        self.package_manager = package_manager
 
     def setup(
         self,
@@ -165,13 +173,30 @@ class HPCSubmissionLauncher(Launcher):
             # If the job script is in the bin directory (ie. a poetry script) then use
             # the prun option in the submission command
             job_script: Path = Path(sys.argv[0])
+            if any("+launch.script=" in arg for arg in job_override):
+                job_script = Path(
+                    next(arg for arg in job_override if "+launch.script=" in arg).split(
+                        "=",
+                        1,
+                    )[1],
+                )
+                job_override.pop(
+                    job_override.index(
+                        next(arg for arg in job_override if "+launch.script=" in arg),
+                    ),
+                )
             if job_script.suffix == "" and job_script.resolve().parent.name == "bin":
-                job_script = Path(f"prun:{job_script.name}")
+                job_script = Path(f"{self.package_manager.value}:{job_script.name}")
 
             # Reformat string overrides to handle spaces in the values
             overrides_list: list[str] = []
+            launch_command_overrides: list[str] = []
             for override in job_override:
-                if "\\" not in override:
+                if (
+                    "\\" not in override
+                    and "$" not in override
+                    and "+launch" not in override
+                ):
                     overrides_list.append(override)
                     continue
 
@@ -182,8 +207,28 @@ class HPCSubmissionLauncher(Launcher):
                     override_value = override_value.replace("(", "\\(")
                 if ")" in override_value:
                     override_value = override_value.replace(")", "\\)")
+                if "{" in override_value:
+                    override_value = override_value.replace("{", "\\{")
+                if "}" in override_value:
+                    override_value = override_value.replace("}", "\\}")
+                if "$" in override_value:
+                    override_value = override_value.replace("$", "\\\\\\\\$")
 
+                # Handle launch command overrides
+                if "+launch" in override_key:
+                    override_key = override_key.replace("+launch.", "").replace(
+                        "+launch/",
+                        "",
+                    )
+                    launch_command_overrides.append(
+                        f'{override_key}=\\"{override_value}\\"',
+                    )
+                    continue
                 overrides_list.append(f'{override_key}=\\"{override_value}\\"')
+
+            if launch_command_overrides:
+                overrides_list.append("--")
+                overrides_list.extend(launch_command_overrides)
 
             job_script_args: str = " ".join(overrides_list)
             launch_command_list: list[str] = [
@@ -193,12 +238,15 @@ class HPCSubmissionLauncher(Launcher):
                 f"--job_script {job_script}",
                 f'--job_script_args "{job_script_args}"',
                 f"--template {self.template}",
-                f"--queue {self.queue}",
                 f"--ncpus {self.ncpus}",
                 f"--memory {self.memory}",
                 f"--ngpus {self.ngpus}",
                 f"--walltime={self.walltime}",
             ]
+            if self.queue != HPCQueue.DEFAULT:
+                launch_command_list.append(
+                    f"--queue {self.queue}",
+                )
 
             # Submit job to HPC
             launch_command: str = " ".join(launch_command_list)
@@ -237,15 +285,27 @@ class HPCSubmissionLauncher(Launcher):
         return results
 
 
-def register_plugin() -> None:
-    """Register the HPC Submission Launcher."""
-    hpc_submission_launcher_config = builds(
-        HPCSubmissionLauncher,
-        populate_full_signature=True,
+@dataclass
+class HPCSubmissionConfig:
+    """Configuration for HPC submission launcher."""
+
+    _target_: str = (
+        "hydra_plugins.hpc_submission_launcher.launcher.HPCSubmissionLauncher"
     )
+    queue: HPCQueue = HPCQueue.DSML
+    ncpus: int = 2
+    memory: int = 16
+    ngpus: int = 1
+    walltime: str = "48:00:00"
+    template: Template = Template.RTX6000
+    package_manager: PackageManager = PackageManager.UV
+
+
+def register_plugin(plugin_name: str = "hpc_submission") -> None:
+    """Register the HPC Submission Launcher."""
     ConfigStore.instance().store(
         group="hydra/launcher",
-        name="hpc_submission",
-        node=hpc_submission_launcher_config,
+        name=plugin_name,
+        node=HPCSubmissionConfig,
     )
     Plugins.instance().register(HPCSubmissionLauncher)
