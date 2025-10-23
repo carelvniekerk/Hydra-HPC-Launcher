@@ -127,13 +127,12 @@ class HPCSubmissionLauncher(Launcher):
 
     def __init__(  # noqa: PLR0913, D107
         self,
-        queue: HPCQueue,
-        ncpus: int,
-        memory: int,
-        ngpus: int,
-        walltime: str,
-        template: Template,
-        package_manager: PackageManager,
+        queue: HPCQueue = HPCQueue.DSML,
+        ncpus: int = 2,
+        memory: int = 16,
+        ngpus: int = 1,
+        walltime: str = "-1:00:00",
+        template: Template = Template.RTX6000,
         **kwargs: dict,
     ) -> None:
         super().__init__(**kwargs)
@@ -242,7 +241,7 @@ class HPCSubmissionLauncher(Launcher):
                 f"--ncpus {self.ncpus}",
                 f"--memory {self.memory}",
                 f"--ngpus {self.ngpus}",
-                f"--walltime {self.walltime}",
+                f"--walltime={self.walltime}",
             ]
             if self.queue != HPCQueue.DEFAULT:
                 launch_command_list.append(
