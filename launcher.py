@@ -166,9 +166,7 @@ class HPCSubmissionLauncher(Launcher):
         for idx, job_override in enumerate(job_overrides):
             # Job name is the task function name and the job index
             try:
-                job_name: str = (
-                    f"{self.task_function.func.__name__}_{initial_job_idx + idx}"  # type: ignore[attr-defined]
-                )
+                job_name: str = f"{self.task_function.func.__name__}_{initial_job_idx + idx}"  # type: ignore[attr-defined]
             except AttributeError:
                 job_name = f"{self.task_function.__name__}_{initial_job_idx + idx}"
             # If the job script is in the bin directory (ie. a poetry script) then use
@@ -193,11 +191,7 @@ class HPCSubmissionLauncher(Launcher):
             overrides_list: list[str] = []
             launch_command_overrides: list[str] = []
             for override in job_override:
-                if (
-                    "\\" not in override
-                    and "$" not in override
-                    and "+launch" not in override
-                ):
+                if "\\" not in override and "$" not in override and "+launch" not in override:
                     overrides_list.append(override)
                     continue
 
@@ -290,9 +284,7 @@ class HPCSubmissionLauncher(Launcher):
 class HPCSubmissionConfig:
     """Configuration for HPC submission launcher."""
 
-    _target_: str = (
-        "hydra_plugins.hpc_submission_launcher.launcher.HPCSubmissionLauncher"
-    )
+    _target_: str = "hydra_plugins.hpc_submission_launcher.launcher.HPCSubmissionLauncher"
     queue: HPCQueue = HPCQueue.DSML
     ncpus: int = 2
     memory: int = 16
