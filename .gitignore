@@ -1,10 +1,9 @@
-poetry.lock
+uv.lock
 .venv
 .python-version
 multirun
 outputs
 __pycache__
-pyproject.toml
 
 # MacOS files
 .DS_Store
