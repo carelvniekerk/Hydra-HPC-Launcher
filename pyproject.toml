@@ -1,8 +1,17 @@
 [project]
-name = "hpc_submission_launcher"
+name = "hydra_hpc_launcher"
 version = "0.1.0"
 description = "HPC Submission Launcher for Hydra."
 readme = "README.md"
-authors = [{ name = "Carel van Niekerk", email = "cvanniekerk@hhu.de" }]
+authors = [{ name = "Carel van Niekerk", email = "vniekerk.carel@gmail.com" }]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "hydra-core==1.4.0.dev1",
+]
+
+[tool.uv]
+prerelease = "allow"
+
+[build-system]
+requires = ["uv_build>=0.8.8,<0.9.0"]
+build-backend = "uv_build"
