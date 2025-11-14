@@ -36,9 +36,14 @@ def register_plugin(
     launcher: type[Launcher] = HPCSubmissionLauncher,
 ) -> None:
     """Register the HPC Submission Launcher."""
+    if not config._target_.startswith("hydra_plugins."):
+        config._target_ = f"hydra_plugins.{config._target_}"
+
     ConfigStore.instance().store(
         group="hydra/launcher",
         name=plugin_name,
         node=config,
     )
-    Plugins.instance().register(launcher)
+    plugins_manager: Plugins = Plugins.instance()
+    plugins_manager.register(launcher)
+    plugins_manager.class_name_to_class[config._target_] = launcher
