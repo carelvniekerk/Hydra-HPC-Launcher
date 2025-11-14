@@ -33,7 +33,7 @@ from hydra.plugins.launcher import Launcher
 from hydra.types import HydraContext, TaskFunction
 from omegaconf import DictConfig, open_dict
 
-from hydra_hpc_launcher.config import handle_output_dir_and_save_configs
+from hydra_hpc_launcher.config.handler import handle_output_dir_and_save_configs
 from hydra_hpc_launcher.launcher.types import HPCQueue, PackageManager, Template
 
 __all__ = ["HPCSubmissionLauncher"]

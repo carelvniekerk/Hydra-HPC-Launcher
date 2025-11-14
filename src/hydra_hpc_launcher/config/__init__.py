@@ -21,6 +21,5 @@
 """HPC Submission Launcher Configuration."""
 
 from hydra_hpc_launcher.config.configuration import HPCSubmissionConfig
-from hydra_hpc_launcher.config.handler import handle_output_dir_and_save_configs
 
-__all__ = ["HPCSubmissionConfig", "handle_output_dir_and_save_configs"]
+__all__ = ["HPCSubmissionConfig"]
