@@ -31,9 +31,7 @@ __all__ = ["HPCSubmissionConfig"]
 class HPCSubmissionConfig:
     """Configuration for HPC submission launcher."""
 
-    _target_: str = (
-        "hydra_plugins.hpc_submission_launcher.launcher.HPCSubmissionLauncher"
-    )
+    _target_: str = "hydra_hpc_launcher.launcher.HPCSubmissionLauncher"
     queue: HPCQueue = HPCQueue.DSML
     ncpus: int = 2
     memory: int = 16
